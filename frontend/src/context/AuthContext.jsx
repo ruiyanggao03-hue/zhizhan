@@ -36,11 +36,10 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
-  const register = async (phone, password, smsCode) => {
+  const register = async (phone, password) => {
     const res = await axios.post(`${API_BASE}/api/auth/register`, {
       phone,
       password,
-      sms_code: smsCode,
     });
     const { access_token, user: userData } = res.data;
     localStorage.setItem('auth_token', access_token);

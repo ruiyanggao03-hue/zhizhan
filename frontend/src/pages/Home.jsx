@@ -6,6 +6,7 @@ import { Search, TrendingUp, Cpu, Globe, ArrowRight, Activity, Zap, Info } from 
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../api';
 import AuthModal from '../components/AuthModal';
 import UserMenu from '../components/UserMenu';
 import CompanyProfile from '../components/CompanyProfile';
@@ -48,7 +49,7 @@ function Home() {
     setInputValue(value);
     if (value.length >= 1) {
       try {
-        const res = await axios.get(`http://localhost:8000/api/search?keyword=${value}`);
+        const res = await axios.get(`${API_BASE}/api/search?keyword=${value}`);
         setOptions(res.data);
       } catch (e) {
         console.error('搜索接口请求失败:', e);

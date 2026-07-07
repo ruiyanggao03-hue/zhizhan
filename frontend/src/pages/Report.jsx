@@ -27,7 +27,7 @@ const THINKING_TEXT = {
   full_report: '正在调取知识库与全网数据，撰写完整深度研报...',
 };
 
-const API_BASE = 'http://localhost:8000';
+import { API_BASE } from '../api';
 
 export default function ReportWorkspace() {
   const { token } = useAuth();
@@ -40,7 +40,7 @@ export default function ReportWorkspace() {
   const { data: industry = '分析中...' } = useQuery({
     queryKey: ['industry', stockCode],
     queryFn: async () => {
-      const res = await axios.get(`http://localhost:8000/api/industry?code=${stockCode}&name=${stockName}`);
+      const res = await axios.get(`${API_BASE}/api/industry?code=${stockCode}&name=${stockName}`);
       return res.data.industry || '全市场综合研判';
     },
     staleTime: Infinity,  // 行业分类永不变化，一次请求永久缓存
@@ -113,7 +113,7 @@ export default function ReportWorkspace() {
     setNavInputValue(value);
     if (value.length >= 1) {
       try {
-        const res = await axios.get(`http://localhost:8000/api/search?keyword=${value}`, { timeout: 5000 });
+        const res = await axios.get(`${API_BASE}/api/search?keyword=${value}`, { timeout: 5000 });
         setNavOptions(res.data);
       } catch (e) {}
     } else {
@@ -164,7 +164,7 @@ export default function ReportWorkspace() {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/rag/upload', formData, {
+      const response = await axios.post('${API_BASE}/api/rag/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       if (response.data.status === 'success') {
@@ -199,7 +199,7 @@ export default function ReportWorkspace() {
     setUploadedDocs((prev) => prev.filter((doc) => doc.id !== docId));
     setSelectedDocs((prev) => prev.filter((id) => id !== docId));
     try {
-      await axios.post('http://localhost:8000/api/rag/delete_doc', { doc_id: docId });
+      await axios.post('${API_BASE}/api/rag/delete_doc', { doc_id: docId });
     } catch (error) {}
   };
 
@@ -244,7 +244,7 @@ export default function ReportWorkspace() {
     let exportable = false;
 
     try {
-      const response = await fetch('http://localhost:8000/api/rag/chat', {
+      const response = await fetch('${API_BASE}/api/rag/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

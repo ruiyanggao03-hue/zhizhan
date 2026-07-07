@@ -1,6 +1,6 @@
-﻿import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Tabs, Input, Button, message, Progress } from 'antd';
-import { PhoneOutlined, LockOutlined, SafetyOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { PhoneOutlined, LockOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -26,73 +26,30 @@ function strengthLabel(v) {
 
 export default function AuthModal({ open, onClose }) {
   const { login, register } = useAuth();
-  const [view, setView] = useState('login'); // 'login' | 'register' | 'reset'
+  const [view, setView] = useState('login');
   const [loading, setLoading] = useState(false);
 
-  // Login form
+  // Login
   const [loginPhone, setLoginPhone] = useState('');
   const [loginPw, setLoginPw] = useState('');
 
-  // Register form
+  // Register (no SMS)
   const [regPhone, setRegPhone] = useState('');
   const [regPw, setRegPw] = useState('');
-  const [regSmsCode, setRegSmsCode] = useState('');
 
-  // Reset password form
+  // Reset password (old password verification instead of SMS)
   const [resetPhone, setResetPhone] = useState('');
-  const [resetPw, setResetPw] = useState('');
-  const [resetSmsCode, setResetSmsCode] = useState('');
+  const [resetOldPw, setResetOldPw] = useState('');
+  const [resetNewPw, setResetNewPw] = useState('');
 
-  // SMS
-  const [smsCooldown, setSmsCooldown] = useState(0);
-  const [smsDevCode, setSmsDevCode] = useState('');
-  const cooldownTimer = useRef(null);
-
-  useEffect(() => {
-    return () => { if (cooldownTimer.current) clearInterval(cooldownTimer.current); };
-  }, []);
-
-  // Reset state when modal opens
   useEffect(() => {
     if (open) {
       setView('login');
       setLoginPhone(''); setLoginPw('');
-      setRegPhone(''); setRegPw(''); setRegSmsCode('');
-      setResetPhone(''); setResetPw(''); setResetSmsCode('');
-      setSmsCooldown(0); setSmsDevCode('');
+      setRegPhone(''); setRegPw('');
+      setResetPhone(''); setResetOldPw(''); setResetNewPw('');
     }
   }, [open]);
-
-  const getCurrentPhone = useCallback(() => {
-    if (view === 'register') return regPhone;
-    if (view === 'reset') return resetPhone;
-    return '';
-  }, [view, regPhone, resetPhone]);
-
-  const handleSendSms = useCallback(async () => {
-    if (smsCooldown > 0) return;
-    const phone = getCurrentPhone();
-    if (!/^1[3-9]\d{9}$/.test(phone)) {
-      message.warning('请输入正确的手机号');
-      return;
-    }
-    try {
-      const res = await axios.post(`${API_BASE}/api/auth/send-sms`, { phone });
-      if (res.data.dev_mode) {
-        setSmsDevCode(res.data.code);
-        message.info(`开发模式验证码：${res.data.code}`);
-      }
-      let cd = 60;
-      setSmsCooldown(cd);
-      cooldownTimer.current = setInterval(() => {
-        cd -= 1;
-        if (cd <= 0) { clearInterval(cooldownTimer.current); setSmsCooldown(0); }
-        else setSmsCooldown(cd);
-      }, 1000);
-    } catch (e) {
-      message.error(e.response?.data?.detail || '发送验证码失败');
-    }
-  }, [smsCooldown, getCurrentPhone]);
 
   const handleLogin = async () => {
     if (!loginPhone || !loginPw) { message.warning('请填写手机号和密码'); return; }
@@ -109,11 +66,11 @@ export default function AuthModal({ open, onClose }) {
   };
 
   const handleRegister = async () => {
-    if (!regPhone || !regPw || !regSmsCode) { message.warning('请填写所有字段'); return; }
+    if (!regPhone || !regPw) { message.warning('请填写手机号和密码'); return; }
     if (getPasswordStrength(regPw) < 50) { message.warning('密码过于简单，请设置更复杂的密码'); return; }
     setLoading(true);
     try {
-      await register(regPhone, regPw, regSmsCode);
+      await register(regPhone, regPw);
       message.success('注册成功！');
       onClose();
     } catch (e) {
@@ -124,14 +81,14 @@ export default function AuthModal({ open, onClose }) {
   };
 
   const handleResetPassword = async () => {
-    if (!resetPhone || !resetPw || !resetSmsCode) { message.warning('请填写所有字段'); return; }
-    if (getPasswordStrength(resetPw) < 50) { message.warning('密码过于简单，请设置更复杂的密码'); return; }
+    if (!resetPhone || !resetOldPw || !resetNewPw) { message.warning('请填写所有字段'); return; }
+    if (getPasswordStrength(resetNewPw) < 50) { message.warning('密码过于简单，请设置更复杂的密码'); return; }
     setLoading(true);
     try {
       await axios.post(`${API_BASE}/api/auth/reset-password`, {
         phone: resetPhone,
-        sms_code: resetSmsCode,
-        new_password: resetPw,
+        old_password: resetOldPw,
+        new_password: resetNewPw,
       });
       message.success('密码重置成功！请使用新密码登录');
       setView('login');
@@ -146,7 +103,7 @@ export default function AuthModal({ open, onClose }) {
 
   const regPwStrength = getPasswordStrength(regPw);
   const regPwLabel = strengthLabel(regPwStrength);
-  const resetPwStrength = getPasswordStrength(resetPw);
+  const resetPwStrength = getPasswordStrength(resetNewPw);
   const resetPwLabel = strengthLabel(resetPwStrength);
 
   // --- Reset password view ---
@@ -169,29 +126,20 @@ export default function AuthModal({ open, onClose }) {
           <Input size="large" prefix={<PhoneOutlined style={{ color: '#64748b' }} />} placeholder="已注册的手机号"
             value={resetPhone} onChange={e => setResetPhone(e.target.value)}
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '8px' }} />
+          <Input.Password size="large" prefix={<LockOutlined style={{ color: '#64748b' }} />} placeholder="旧密码"
+            value={resetOldPw} onChange={e => setResetOldPw(e.target.value)}
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '8px' }} />
           <div>
-            <Input.Password size="large" prefix={<LockOutlined style={{ color: '#64748b' }} />} placeholder="新密码（至少8位，包含字母和数字）"
-              value={resetPw} onChange={e => setResetPw(e.target.value)}
+            <Input.Password size="large" prefix={<LockOutlined style={{ color: '#64748b' }} />} placeholder="新密码（至少8位，含字母和数字）"
+              value={resetNewPw} onChange={e => setResetNewPw(e.target.value)} onPressEnter={handleResetPassword}
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '8px' }} />
-            {resetPw && (
+            {resetNewPw && (
               <div style={{ marginTop: '8px' }}>
                 <Progress percent={resetPwStrength} size="small" strokeColor={resetPwLabel.color} showInfo={false} />
                 <span style={{ fontSize: '12px', color: resetPwLabel.color, fontWeight: 500 }}>密码强度：{resetPwLabel.text}</span>
               </div>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <Input size="large" prefix={<SafetyOutlined style={{ color: '#64748b' }} />} placeholder="短信验证码"
-              value={resetSmsCode} onChange={e => setResetSmsCode(e.target.value)} onPressEnter={handleResetPassword}
-              style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '8px' }} />
-            <Button size="large" disabled={smsCooldown > 0} onClick={handleSendSms}
-              style={{ whiteSpace: 'nowrap', background: smsCooldown > 0 ? '#334155' : '#f59e0b', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 500 }}>
-              {smsCooldown > 0 ? `${smsCooldown}s` : '获取验证码'}
-            </Button>
-          </div>
-          {smsDevCode && (
-            <div style={{ fontSize: '12px', color: '#f59e0b', textAlign: 'center' }}>开发模式，验证码：{smsDevCode}</div>
-          )}
           <Button type="primary" block size="large" loading={loading} onClick={handleResetPassword}
             style={{ background: 'linear-gradient(90deg, #f59e0b, #d97706)', border: 'none', fontWeight: 600, borderRadius: '8px', height: '44px' }}>
             重置密码
@@ -246,7 +194,7 @@ export default function AuthModal({ open, onClose }) {
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '8px' }} />
                 <div>
                   <Input.Password size="large" prefix={<LockOutlined style={{ color: '#64748b' }} />} placeholder="密码（至少8位，包含字母和数字）"
-                    value={regPw} onChange={e => setRegPw(e.target.value)}
+                    value={regPw} onChange={e => setRegPw(e.target.value)} onPressEnter={handleRegister}
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '8px' }} />
                   {regPw && (
                     <div style={{ marginTop: '8px' }}>
@@ -255,18 +203,6 @@ export default function AuthModal({ open, onClose }) {
                     </div>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <Input size="large" prefix={<SafetyOutlined style={{ color: '#64748b' }} />} placeholder="短信验证码"
-                    value={regSmsCode} onChange={e => setRegSmsCode(e.target.value)} onPressEnter={handleRegister}
-                    style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: '8px' }} />
-                  <Button size="large" disabled={smsCooldown > 0} onClick={handleSendSms}
-                    style={{ whiteSpace: 'nowrap', background: smsCooldown > 0 ? '#334155' : '#7e22ce', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 500 }}>
-                    {smsCooldown > 0 ? `${smsCooldown}s` : '获取验证码'}
-                  </Button>
-                </div>
-                {smsDevCode && (
-                  <div style={{ fontSize: '12px', color: '#f59e0b', textAlign: 'center' }}>开发模式，验证码：{smsDevCode}</div>
-                )}
                 <Button type="primary" block size="large" loading={loading} onClick={handleRegister}
                   style={{ background: 'linear-gradient(90deg, #7e22ce, #a855f7)', border: 'none', fontWeight: 600, borderRadius: '8px', height: '44px' }}>
                   注册

@@ -10,8 +10,9 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import ConversationSidebar from '../components/ConversationSidebar';
 
+import { API_BASE } from '../api';
+
 const { Title, Text } = Typography;
-const API_BASE = 'http://localhost:8000';
 
 // 提取到组件外，避免每次渲染时重建
 const StatItem = ({ title, value, color }) => (
@@ -80,7 +81,7 @@ export default function Sentiment() {
   const { data: heavyData, isLoading: loading } = useQuery({
     queryKey: ['sentiment', stockCode],
     queryFn: async () => {
-      const response = await axios.get(`http://localhost:8000/api/sentiment/data/${stockCode}`, { timeout: 20000 });
+      const response = await axios.get(`${API_BASE}/api/sentiment/data/${stockCode}`, { timeout: 20000 });
       if (response.data.status === "error") { setErrorMsg(response.data.message); throw new Error(response.data.message); }
       return response.data;
     },
@@ -90,7 +91,7 @@ export default function Sentiment() {
   const { data: realtime } = useQuery({
     queryKey: ['sentiment-realtime', stockCode],
     queryFn: async () => {
-      const res = await axios.get(`http://localhost:8000/api/sentiment/realtime/${stockCode}`, { timeout: 5000 });
+      const res = await axios.get(`${API_BASE}/api/sentiment/realtime/${stockCode}`, { timeout: 5000 });
       return res.data;
     },
     refetchInterval: 15000,
@@ -149,7 +150,7 @@ export default function Sentiment() {
     let aiContent = '';
 
     try {
-      const response = await fetch('http://localhost:8000/api/sentiment/chat', {
+      const response = await fetch(`${API_BASE}/api/sentiment/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -267,7 +268,7 @@ export default function Sentiment() {
   const handleNavSearch = async (value) => {
     setNavInputValue(value);
     if (value.length >= 1) {
-      try { const res = await axios.get(`http://localhost:8000/api/search?keyword=${value}`, { timeout: 5000 }); setNavOptions(res.data); } catch (e) {}
+      try { const res = await axios.get(`${API_BASE}/api/search?keyword=${value}`, { timeout: 5000 }); setNavOptions(res.data); } catch (e) {}
     } else setNavOptions([]);
   };
 

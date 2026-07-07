@@ -1,3 +1,4 @@
+import { API_BASE } from '../api';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Typography, Row, Col, Card, Spin, ConfigProvider, theme, Space, Button, Alert, AutoComplete, Input, message } from 'antd';
@@ -43,7 +44,7 @@ function Fundamentals() {
   const { data: chartData, isLoading: loading, error } = useQuery({
     queryKey: ['fundamentals', stockCode],
     queryFn: async () => {
-      const response = await axios.get(`http://localhost:8000/api/fundamentals/${stockCode}`);
+      const response = await axios.get(`${API_BASE}/api/fundamentals/${stockCode}`);
       if (response.data.status === "error") throw new Error(response.data.message);
       return response.data;
     },
@@ -54,7 +55,7 @@ function Fundamentals() {
     setNavInputValue(value);
     if (value.length >= 1) {
       try {
-        const res = await axios.get(`http://localhost:8000/api/search?keyword=${value}`);
+        const res = await axios.get(`${API_BASE}/api/search?keyword=${value}`);
         setNavOptions(res.data);
       } catch (e) { console.error(e); }
     } else { setNavOptions([]); }

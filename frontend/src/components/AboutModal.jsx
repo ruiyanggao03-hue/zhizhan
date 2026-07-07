@@ -49,7 +49,7 @@ export default function AboutModal({ open, onClose }) {
               textDecoration: 'none', display: 'block', marginBottom: '8px',
             }}
           >
-            your-email@example.com
+            2410208909@qq.com
           </a>
           <p style={{ color: '#64748b', fontSize: '12px', margin: 0, lineHeight: 1.6 }}>
             如有问题、建议或合作意向，欢迎发送邮件。

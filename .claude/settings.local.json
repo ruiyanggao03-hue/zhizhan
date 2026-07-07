@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(if \\(Test-Path \"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\"\\) { Write-Output \"Git found at Program Files\" }; if \\(Test-Path \"$env:LOCALAPPDATA\\\\Programs\\\\Git\\\\bin\\\\git.exe\"\\) { Write-Output \"Git found at LocalAppData\" }; if \\(Get-Command scoop -ErrorAction SilentlyContinue\\) { Write-Output \"Scoop available\" }; if \\(Get-Command winget -ErrorAction SilentlyContinue\\) { Write-Output \"Winget available\" }; if \\(Get-Command choco -ErrorAction SilentlyContinue\\) { Write-Output \"Choco available\" })"
+    ]
+  }
+}

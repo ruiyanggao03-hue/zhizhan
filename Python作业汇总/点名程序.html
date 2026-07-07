@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博趣味点名系统</title>
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --bg: #050505;
+            --card: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050505 100%);
+        }
+
+        /* 霓虹灯背景装饰 */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: var(--secondary);
+            filter: blur(150px);
+            opacity: 0.2;
+            top: 10%;
+            left: 10%;
+            z-index: -1;
+        }
+
+        /* 主容器 */
+        .container {
+            background: var(--card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        /* 姓名展示窗口 */
+        .display-slot {
+            height: 120px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary);
+            border: 2px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display-slot::after {
+            content: "SCANNING...";
+            position: absolute;
+            bottom: 5px;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            opacity: 0.5;
+        }
+
+        /* 按钮 */
+        .btn-roll {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(112, 0, 255, 0.3);
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-roll:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 242, 255, 0.4);
+        }
+
+        .btn-roll:active { transform: translateY(0); }
+
+        .btn-roll:disabled {
+            filter: grayscale(1);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* 互动任务卡片 */
+        #task-card {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: #ff00ff;
+            font-weight: bold;
+            height: 30px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        /* 学生墙列表 */
+        .student-wall {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            max-width: 800px;
+            opacity: 0.3;
+        }
+
+        .student-item {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border: 1px solid white;
+            border-radius: 4px;
+        }
+
+        /* 烟花画布 */
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="container">
+        <div style="margin-bottom: 10px; font-size: 0.9rem; color: #aaa;">CLASS INTERACTION SYSTEM</div>
+        <div class="display-slot" id="display">READY</div>
+        
+        <div id="task-card">抽中后显示随机任务</div>
+
+        <button class="btn-roll" id="btn" onclick="luckyRoll()">开始抽取</button>
+        
+        <div style="margin-top: 20px;">
+            <label style="font-size: 0.8rem; color: #666;">
+                <input type="checkbox" id="voice-toggle" checked> 开启电子合成音效
+            </label>
+        </div>
+    </div>
+
+    <div class="student-wall" id="wall"></div>
+
+    <script>
+        const students = ["张三", "李四", "王五", "赵六", "孙七", "周八", "吴九", "郑十", "陈十一", "林十二"];
+        const tasks = ["唱一首歌", "做3个俯卧撑", "分享一个冷知识", "模仿一个表情包", "请下一位同学回答问题"];
+        
+        let lastWinner = ""; // 记录上一次中奖者防止连续重复
+        let isRolling = false;
+
+        // --- 音效系统 ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(freq, duration, type = 'sine') {
+            if (!document.getElementById('voice-toggle').checked) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        // --- 初始化学生墙 ---
+        const wall = document.getElementById('wall');
+        students.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'student-item';
+            div.innerText = s;
+            wall.appendChild(div);
+        });
+
+        // --- 点名逻辑 ---
+        function luckyRoll() {
+            if (isRolling) return;
+            
+            isRolling = true;
+            const btn = document.getElementById('btn');
+            const display = document.getElementById('display');
+            const taskCard = document.getElementById('task-card');
+            
+            btn.disabled = true;
+            taskCard.style.opacity = "0";
+            
+            let counter = 0;
+            const maxCycles = 25; // 滚动次数
+
+            const interval = setInterval(() => {
+                let randomStudent;
+                // 确保滚动过程中不显示上一次的中奖者，增加真实感
+                do {
+                    randomStudent = students[Math.floor(Math.random() * students.length)];
+                } while (randomStudent === lastWinner && students.length > 1);
+
+                display.innerText = randomStudent;
+                
+                // 每次滚动播放短促音效
+                playBeep(440 + (counter * 20), 0.1, 'square');
+                
+                counter++;
+
+                if (counter > maxCycles) {
+                    clearInterval(interval);
+                    finalizeSelection();
+                }
+            }, 80);
+        }
+
+        function finalizeSelection() {
+            const display = document.getElementById('display');
+            const btn = document.getElementById('btn');
+            const taskCard = document.getElementById('task-card');
+
+            // 最终中奖逻辑：避开上次的中奖者
+            let winner;
+            do {
+                winner = students[Math.floor(Math.random() * students.length)];
+            } while (winner === lastWinner && students.length > 1);
+            
+            lastWinner = winner;
+            display.innerText = winner;
+            
+            // 中奖音效
+            playBeep(880, 0.5, 'sine');
+            setTimeout(() => playBeep(1100, 0.4, 'sine'), 100);
+
+            // 显示随机任务
+            taskCard.innerText = "任务：" + tasks[Math.floor(Math.random() * tasks.length)];
+            taskCard.style.opacity = "1";
+
+            // 触发烟花
+            fireworks();
+
+            btn.disabled = false;
+            isRolling = false;
+        }
+
+        // --- 简单的烟花动效 ---
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function fireworks() {
+            const particles = [];
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    life: 100
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach((p, i) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.1; // 重力
+                    p.life--;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    if (p.life <= 0) particles.splice(i, 1);
+                });
+                if (particles.length > 0) requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>

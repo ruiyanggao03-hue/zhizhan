@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>赛博角斗场：石头剪刀布</title>
+    <style>
+        :root {
+            --bg: #0a0a12;
+            --card: #161625;
+            --primary: #00f2ff;
+            --win: #00ff88;
+            --lose: #ff0055;
+            --draw: #ffcc00;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* 计分板 */
+        .score-board {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .score-item { text-align: center; }
+        .score-num { display: block; font-size: 3rem; color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+
+        /* 对战区域 */
+        .arena {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            margin-bottom: 50px;
+            perspective: 1000px;
+        }
+
+        .fighter {
+            width: 150px;
+            height: 150px;
+            background: var(--card);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .fighter.thinking { animation: shake 0.2s infinite; border-color: var(--primary); }
+        @keyframes shake {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* 控制区 */
+        .controls {
+            display: flex;
+            gap: 20px;
+        }
+
+        .choice-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            background: var(--card);
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .choice-btn:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .choice-btn:active { transform: scale(0.9); }
+
+        /* 结果提示 */
+        #status {
+            margin-top: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            height: 40px;
+            text-transform: uppercase;
+        }
+
+        .win-glow { animation: glow-green 0.5s ease-out; }
+        @keyframes glow-green {
+            0% { box-shadow: 0 0 0px var(--win); }
+            100% { box-shadow: 0 0 100px var(--win); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="score-board">
+        <div class="score-item">PLAYER <span id="p-score" class="score-num">0</span></div>
+        <div class="score-item">CPU <span id="c-score" class="score-num">0</span></div>
+    </div>
+
+    <div class="arena">
+        <div id="player-hand" class="fighter">?</div>
+        <div style="font-size: 2rem; color: #444;">VS</div>
+        <div id="cpu-hand" class="fighter">?</div>
+    </div>
+
+    <div id="status">选择你的武器！</div>
+
+    <div class="controls">
+        <button class="choice-btn" onclick="play('✊')">✊</button>
+        <button class="choice-btn" onclick="play('✌️')">✌️</button>
+        <button class="choice-btn" onclick="play('✋')">✋</button>
+    </div>
+
+    <script>
+        let pScore = 0;
+        let cScore = 0;
+        const hands = { '✊': 'rock', '✌️': 'scissors', '✋': 'paper' };
+        const emojiArr = ['✊', '✌️', '✋'];
+
+        // --- 电子音效系统 ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function sound(freq, type, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function play(playerChoice) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const cpuEl = document.getElementById('cpu-hand');
+            const playerEl = document.getElementById('player-hand');
+            const statusEl = document.getElementById('status');
+            
+            // 准备状态
+            statusEl.innerText = "对峙中...";
+            statusEl.style.color = "white";
+            playerEl.innerText = playerChoice;
+            cpuEl.innerText = "?";
+            cpuEl.classList.add('thinking');
+            sound(200, 'square', 0.2);
+
+            setTimeout(() => {
+                cpuEl.classList.remove('thinking');
+                const cpuChoice = emojiArr[Math.floor(Math.random() * 3)];
+                cpuEl.innerText = cpuChoice;
+                
+                determineWinner(playerChoice, cpuChoice);
+            }, 600);
+        }
+
+        function determineWinner(p, c) {
+            const statusEl = document.getElementById('status');
+            let result = "";
+
+            if (p === c) {
+                result = "DRAW";
+                statusEl.style.color = "var(--draw)";
+                sound(300, 'triangle', 0.3);
+            } else if (
+                (p === '✊' && c === '✌️') ||
+                (p === '✌️' && c === '✋') ||
+                (p === '✋' && c === '✊')
+            ) {
+                result = "YOU WIN!";
+                pScore++;
+                statusEl.style.color = "var(--win)";
+                document.body.classList.add('win-glow');
+                setTimeout(() => document.body.classList.remove('win-glow'), 500);
+                sound(600, 'sine', 0.1);
+                setTimeout(() => sound(800, 'sine', 0.2), 100);
+            } else {
+                result = "CPU WIN";
+                cScore++;
+                statusEl.style.color = "var(--lose)";
+                sound(150, 'sawtooth', 0.4);
+            }
+
+            statusEl.innerText = result;
+            document.getElementById('p-score').innerText = pScore;
+            document.getElementById('c-score').innerText = cScore;
+        }
+    </script>
+</body>
+</html>

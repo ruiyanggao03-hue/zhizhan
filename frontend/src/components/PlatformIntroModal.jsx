@@ -41,7 +41,7 @@ export default function PlatformIntroModal({ open, onClose }) {
           marginBottom: '24px',
         }}>
           {[
-            { icon: <TrendingUp size={18} />, title: '智能研判', desc: '多维度数据交叉验证，AI 驱动深度解读' },
+            { icon: <TrendingUp size={18} />, title: '智能研判', desc: '多维数据交叉验证，AI 驱动深度解读' },
             { icon: <Layers size={18} />, title: '异构数据融合', desc: '财报、行情、舆情、研报一站聚合' },
             { icon: <Zap size={18} />, title: '实时响应', desc: '流式推理引擎，秒级产出分析结论' },
             { icon: <Shield size={18} />, title: '专业合规', desc: '严格免责声明，辅助决策不替代决策' },
