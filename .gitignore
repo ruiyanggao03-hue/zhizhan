@@ -1,0 +1,9 @@
+node_modules/
+backend_env/
+__pycache__/
+*.pyc
+.env
+chroma_db/
+static/avatars/
+dist/
+.vite/
