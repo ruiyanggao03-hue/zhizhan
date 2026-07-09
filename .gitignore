@@ -3,7 +3,10 @@ backend_env/
 __pycache__/
 *.pyc
 .env
+*.db
 chroma_db/
 static/avatars/
 dist/
 .vite/
+backend/system_RAG_databases/
+.claude/
