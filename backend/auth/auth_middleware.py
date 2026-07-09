@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from dotenv import load_dotenv
@@ -24,7 +24,7 @@ security = HTTPBearer()
 
 
 def create_access_token(user_id: str) -> str:
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {"sub": user_id, "exp": expire, "iat": now}
     return jwt.encode(payload, _SECRET_KEY, algorithm=ALGORITHM)
