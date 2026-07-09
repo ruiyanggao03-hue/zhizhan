@@ -359,7 +359,7 @@ def build_system_prompt(intent: str, req, current_date_day: str, industry_main: 
     return base
 
 # =====================================================================
-# RAG 引擎（懒加载 — 免费服务器内存有限，不调用不加载）
+# RAG 引擎
 # =====================================================================
 class ZhiZhanRAGEngine:
     def __init__(self):
@@ -367,7 +367,6 @@ class ZhiZhanRAGEngine:
         if not deepseek_key:
             raise ValueError("❌ 未在 .env 中找到 DEEPSEEK_API_KEY")
 
-        # LLM 客户端很轻量，直接初始化
         self.llm = ChatOpenAI(
             api_key=deepseek_key,
             base_url="https://api.deepseek.com",
@@ -376,49 +375,24 @@ class ZhiZhanRAGEngine:
             max_tokens=8192,
             streaming=True
         )
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name="BAAI/bge-small-zh-v1.5",
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'normalize_embeddings': True}
+        )
         self.persist_directory = "./chroma_db"
-        self._industry_cache = {}  # 行业分类缓存
 
-        # 以下大模型延迟到首次使用时才加载（节省内存）
-        self._embeddings = None
-        self._system_db = None
-        self._private_db = None
-        self._reranker = None
-
-    @property
-    def embeddings(self):
-        if self._embeddings is None:
-            self._embeddings = HuggingFaceEmbeddings(
-                model_name="BAAI/bge-small-zh-v1.5",
-                model_kwargs={'device': 'cpu'},
-                encode_kwargs={'normalize_embeddings': True}
-            )
-        return self._embeddings
-
-    @property
-    def system_db(self):
-        if self._system_db is None:
-            self._system_db = Chroma(
-                collection_name="zhizhan_system_reports",
-                embedding_function=self.embeddings,
-                persist_directory=self.persist_directory
-            )
-        return self._system_db
-
-    @property
-    def private_db(self):
-        if self._private_db is None:
-            self._private_db = Chroma(
-                collection_name="zhizhan_ephemeral_reports",
-                embedding_function=self.embeddings
-            )
-        return self._private_db
-
-    @property
-    def reranker(self):
-        if self._reranker is None:
-            self._reranker = CrossEncoder('BAAI/bge-reranker-base', max_length=512)
-        return self._reranker
+        self.system_db = Chroma(
+            collection_name="zhizhan_system_reports",
+            embedding_function=self.embeddings,
+            persist_directory=self.persist_directory
+        )
+        self.private_db = Chroma(
+            collection_name="zhizhan_ephemeral_reports",
+            embedding_function=self.embeddings
+        )
+        self.reranker = CrossEncoder('BAAI/bge-reranker-base', max_length=512)
+        self._industry_cache = {}
 
     async def get_industry_by_llm(self, stock_code: str, stock_name: str) -> str:
         # 行业分类不会变，用内存缓存避免重复调用 AI
