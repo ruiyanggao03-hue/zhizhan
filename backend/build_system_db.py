@@ -10,7 +10,7 @@ load_dotenv()
 
 PDF_FOLDER = "./system_RAG_databases"
 DB_DIR = "./chroma_db"
-COLLECTION_NAME = "zhizhan_system_RAG_databases"
+COLLECTION_NAME = "zhizhan_system_reports"
 
 def build_database():
     print("🚀 [智瞻系统库构建] 正在初始化数据流...")
