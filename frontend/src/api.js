@@ -1,8 +1,6 @@
-// 自动判断：如果是本地开发就用 localhost，否则用生产域名
-const isLocal = typeof window !== 'undefined' && (
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1'
-);
-export const API_BASE = isLocal
-  ? 'http://localhost:8000'
-  : 'https://zhizhantzzs.cn';
+// 优先用环境变量，未设置时自动根据域名判断
+export const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:8000'
+    : 'https://zhizhantzzs.cn');
