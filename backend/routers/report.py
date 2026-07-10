@@ -743,19 +743,22 @@ async def export_report(format: str, req: ExportRequest, background_tasks: Backg
         )
 
     elif format == 'pdf':
+        import subprocess
         tmp_pdf_path = None
-        com_initialized = False
         try:
-            import pythoncom
-            from docx2pdf import convert
-            pythoncom.CoInitialize()
-            com_initialized = True
+            tmp_pdf_expected = tmp_docx_path.replace('.docx', '.pdf')
 
-            tmp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-            tmp_pdf_path = tmp_pdf.name
-            tmp_pdf.close()
+            # 使用 LibreOffice 无头模式转换（Ubuntu 服务器兼容）
+            result = subprocess.run(
+                ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir',
+                 os.path.dirname(tmp_docx_path), tmp_docx_path],
+                capture_output=True, text=True, timeout=60
+            )
 
-            convert(tmp_docx_path, tmp_pdf_path)
+            if result.returncode != 0 or not os.path.exists(tmp_pdf_expected):
+                raise RuntimeError(result.stderr or 'LibreOffice conversion failed')
+
+            tmp_pdf_path = tmp_pdf_expected
 
             background_tasks.add_task(cleanup_temp_files, tmp_docx_path, tmp_pdf_path)
             return FileResponse(
@@ -770,13 +773,7 @@ async def export_report(format: str, req: ExportRequest, background_tasks: Backg
                 cleanup_temp_files(tmp_pdf_path)
             return JSONResponse(
                 status_code=500,
-                content={"status": "error", "message": f"PDF导出失败。报错详情: {str(e)}"}
+                content={"status": "error", "message": f"PDF导出失败：{str(e)}"}
             )
-        finally:
-            if com_initialized:
-                try:
-                    pythoncom.CoUninitialize()
-                except Exception:
-                    pass
 
     return JSONResponse(status_code=400, content={"status": "error", "message": "不支持的导出格式"})

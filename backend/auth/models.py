@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, String, DateTime, Text, Boolean, Integer, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 import os
 
@@ -20,8 +20,8 @@ class User(Base):
     hashed_password = Column(String(128), nullable=False)
     username = Column(String(50), default="用户")
     avatar_path = Column(String(256), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 class Conversation(Base):
@@ -37,8 +37,8 @@ class Conversation(Base):
     summary = Column(Text, nullable=True)          # 早期对话结构化摘要
     key_facts = Column(Text, nullable=True)        # JSON array: [{key, value, source}]
     message_count = Column(Integer, default=0)     # 总消息数，触发摘要判断
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 class Message(Base):
@@ -50,7 +50,7 @@ class Message(Base):
     text = Column(Text, nullable=False)
     intent = Column(String(20), nullable=True)
     exportable = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 def init_db():
