@@ -337,9 +337,10 @@ export default function ReportWorkspace() {
             { sender: 'user', text: userMessage.text, selected_docs: selectedDocs },
             { sender: 'ai', text: aiContent, intent, exportable },
           ],
+        }).then(() => {
+          setConvRefreshKey(k => k + 1);
         }).catch(() => {});
         axios.put(`${API_BASE}/api/chat/conversations/${finalConvId}`, { selected_docs: selectedDocs }).catch(() => {});
-        setConvRefreshKey(k => k + 1);
       }
     }
   };

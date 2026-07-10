@@ -224,8 +224,9 @@ export default function Sentiment() {
             { sender: 'user', text: userMessage.text },
             { sender: 'ai', text: aiContent },
           ],
+        }).then(() => {
+          setConvRefreshKey(k => k + 1);
         }).catch(() => {});
-        setConvRefreshKey(k => k + 1);
       }
     }
   };

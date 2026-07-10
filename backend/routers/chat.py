@@ -43,8 +43,8 @@ def create_conversation(req: CreateConversationRequest, user=Depends(get_current
             "stock_name": conv.stock_name,
             "title": conv.title,
             "selected_docs": json.loads(conv.selected_docs) if conv.selected_docs else [],
-            "created_at": conv.created_at.isoformat(),
-            "updated_at": conv.updated_at.isoformat(),
+            "created_at": conv.created_at.isoformat() + 'Z',
+            "updated_at": conv.updated_at.isoformat() + 'Z',
         }
     finally:
         db.close()
@@ -67,8 +67,8 @@ def list_conversations(module: str = None, user=Depends(get_current_user)):
                 "stock_name": c.stock_name,
                 "title": c.title,
                 "selected_docs": json.loads(c.selected_docs) if c.selected_docs else [],
-                "created_at": c.created_at.isoformat(),
-                "updated_at": c.updated_at.isoformat(),
+                "created_at": c.created_at.isoformat() + 'Z',
+                "updated_at": c.updated_at.isoformat() + 'Z',
             }
             for c in convs
         ]
@@ -99,7 +99,7 @@ def get_messages(conv_id: str, limit: int = 50, offset: int = 0, user=Depends(ge
                     "text": m.text,
                     "intent": m.intent,
                     "exportable": m.exportable,
-                    "created_at": m.created_at.isoformat(),
+                    "created_at": m.created_at.isoformat() + 'Z',
                 }
                 for m in msgs
             ],
