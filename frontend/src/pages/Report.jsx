@@ -244,7 +244,7 @@ export default function ReportWorkspace() {
     let exportable = false;
 
     try {
-      const response = await fetch('${API_BASE}/api/rag/chat', {
+      const response = await fetch(`${API_BASE}/api/rag/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
