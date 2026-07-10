@@ -1,3 +1,8 @@
-// 部署时在 Vercel 环境变量里设置 VITE_API_BASE=https://你的后端.onrender.com
-// 本地开发自动回退到 localhost
-export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+// 自动判断：如果是本地开发就用 localhost，否则用生产域名
+const isLocal = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+);
+export const API_BASE = isLocal
+  ? 'http://localhost:8000'
+  : 'https://zhizhantzzs.cn';
