@@ -514,7 +514,7 @@ export default function ReportWorkspace() {
               <AutoComplete options={navOptions} style={{ flex: 1 }} onSelect={(val) => handleNavExecute(val)} onSearch={handleNavSearch} value={navInputValue} onChange={setNavInputValue}>
                 <Input prefix={<Search size={14} color="#a855f7" />} placeholder="切入新标的" onPressEnter={() => handleNavExecute(navInputValue)} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }} />
               </AutoComplete>
-              <Button type="primary" onClick={() => handleNavExecute(navInputValue)} style={{ background: '#a855f7', color: '#fff', border: 'none', fontWeight: 600, borderRadius: '6px' }}>分析</Button>
+              <Button type="primary" onClick={() => handleNavExecute(navInputValue)} className="nav-btn" style={{ background: '#a855f7', color: '#fff', border: 'none', fontWeight: 600, borderRadius: '8px' }}>分析</Button>
             </div>
 
             <Space size="middle">
@@ -575,29 +575,15 @@ export default function ReportWorkspace() {
 
             /* 导航按钮 — 高级感悬停动效 */
             .nav-btn {
-              transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+              transition: all 0.25s ease;
               cursor: pointer;
-              position: relative;
-              box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
             }
-            .nav-btn::after {
-              content: '';
-              position: absolute;
-              inset: 0;
-              border-radius: 8px;
-              opacity: 0;
-              transition: opacity 0.3s;
-              background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
-              pointer-events: none;
-            }
-            .nav-btn:hover::after { opacity: 1; }
             .nav-btn:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+              transform: scale(1.04);
+              filter: brightness(1.15);
             }
             .nav-btn:active {
-              transform: translateY(0);
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+              transform: scale(0.97);
               transition: all 0.1s;
             }
           `}</style>

@@ -230,13 +230,12 @@ function Home() {
                     />
                   </AutoComplete>
                   <Button
-                    type="primary"
+                    type="primary" className="nav-btn"
                     onClick={() => selectStock(inputValue)}
                     style={{
-                      height: 'auto', padding: '0 28px', borderRadius: '12px',
+                      height: '48px', padding: '0 28px', borderRadius: '12px',
                       background: 'linear-gradient(90deg, #10b981, #059669)',
                       border: 'none', fontWeight: 600, fontSize: '15px',
-                      boxShadow: '0 4px 15px rgba(16,185,129,0.3)',
                     }}
                   >
                     浏览标的
@@ -318,6 +317,21 @@ function Home() {
         <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
         <AboutModal open={aboutModalOpen} onClose={() => setAboutModalOpen(false)} />
         <PlatformIntroModal open={platformIntroOpen} onClose={() => setPlatformIntroOpen(false)} />
+
+        <style>{`
+          .nav-btn {
+            transition: all 0.25s ease;
+            cursor: pointer;
+          }
+          .nav-btn:hover {
+            transform: scale(1.04);
+            filter: brightness(1.15);
+          }
+          .nav-btn:active {
+            transform: scale(0.97);
+            transition: all 0.1s;
+          }
+        `}</style>
       </div>
     </ConfigProvider>
   );

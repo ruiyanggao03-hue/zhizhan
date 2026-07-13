@@ -16,9 +16,9 @@ const { Title, Text } = Typography;
 
 // 提取到组件外，避免每次渲染时重建
 const StatItem = ({ title, value, color }) => (
-  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '8px' }}>
-    <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>{title}</div>
-    <div style={{ fontSize: '20px', fontWeight: 'bold', color: color, fontFamily: 'monospace' }}>{value}</div>
+  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '10px 8px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: '4px', fontWeight: 500 }}>{title}</div>
+    <div style={{ fontSize: '18px', fontWeight: 600, color: color, fontFamily: 'monospace' }}>{value}</div>
   </div>
 );
 
@@ -335,7 +335,7 @@ export default function Sentiment() {
               <AutoComplete options={navOptions} style={{ flex: 1 }} onSelect={(val) => handleNavExecute(val)} onSearch={handleNavSearch} value={navInputValue} onChange={setNavInputValue}>
                 <Input prefix={<Search size={14} color="#3b82f6" />} placeholder="切入新标的" onPressEnter={() => handleNavExecute(navInputValue)} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }}/>
               </AutoComplete>
-              <Button type="primary" onClick={() => handleNavExecute(navInputValue)} style={{ background: '#3b82f6', color: '#fff', border: 'none', fontWeight: 600, borderRadius: '6px' }}>分析</Button>
+              <Button type="primary" onClick={() => handleNavExecute(navInputValue)} className="nav-btn" style={{ background: '#3b82f6', color: '#fff', border: 'none', fontWeight: 600, borderRadius: '8px' }}>分析</Button>
             </div>
 
             <Space size="middle">
@@ -376,8 +376,8 @@ export default function Sentiment() {
                             <StatItem title="最高" value={realtime?.high || '-'} color={colorUp} />
                             <StatItem title="最低" value={realtime?.low || '-'} color={colorDown} />
                         </div>
-                        <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '11px', color: '#475569', background: 'rgba(255,255,255,0.02)', padding: '6px 8px', borderRadius: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            若当前为非交易时段，则显示最近一个交易日的收盘数据
+                        <div style={{ marginTop: '10px', textAlign: 'center', fontSize: '10px', color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.03)', padding: '5px 8px', borderRadius: '6px', border: '0.5px solid rgba(255,255,255,0.04)' }}>
+                            ⚠️ 若当前为非交易时段，则显示最近一个交易日的收盘数据
                         </div>
                     </div>
                   </Card>
@@ -540,32 +540,17 @@ export default function Sentiment() {
         .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 
-        /* 导航按钮 — 高级感悬停动效 */
+        /* 导航按钮 — 悬停动效 */
         .nav-btn {
-          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          transition: all 0.25s ease;
           cursor: pointer;
-          position: relative;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
         }
-        .nav-btn::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 8px;
-          opacity: 0;
-          transition: opacity 0.3s;
-          background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
-          pointer-events: none;
-          z-index: 1;
-        }
-        .nav-btn:hover::after { opacity: 1; }
         .nav-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+          transform: scale(1.04);
+          filter: brightness(1.15);
         }
         .nav-btn:active {
-          transform: translateY(0);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+          transform: scale(0.97);
           transition: all 0.1s;
         }
       `}</style>
