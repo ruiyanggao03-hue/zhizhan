@@ -359,7 +359,7 @@ export default function Sentiment() {
              <Alert title="错误" description={errorMsg} type="error" showIcon style={{marginTop: '20px'}}/>
           ) : (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', minHeight: 0 }}>
-              <Row gutter={20} style={{ flex: '0 0 38%', marginBottom: 0, minHeight: 0 }}>
+              <Row gutter={20} style={{ flex: '0 0 44%', marginBottom: 0, minHeight: 0 }}>
                 <Col span={10} style={{ height: '100%', padding: '0 10px' }}>
                   <Card variant="borderless" style={{ background: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(16px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.04)', height: '100%', display: 'flex', flexDirection: 'column' }} styles={{ body: { padding: '20px', display: 'flex', flexDirection: 'column', height: '100%' } }}>
                     <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -389,7 +389,7 @@ export default function Sentiment() {
                           <PieChart color="#f59e0b" size={18}/>
                           <span style={{ margin: 0, color: '#f59e0b', fontSize: '16px', fontWeight: 'bold', letterSpacing: '1px' }}>市场情绪得分</span>
                       </div>
-                      <div style={{ flex: 'none', display: 'flex', justifyContent: 'center', height: '120px' }}>
+                      <div style={{ flex: 'none', display: 'flex', justifyContent: 'center', height: '100px' }}>
                          <ReactECharts option={optionGauge} style={{ height: '100%', width: '100%' }} />
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>

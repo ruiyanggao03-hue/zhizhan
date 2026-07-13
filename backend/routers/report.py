@@ -12,6 +12,7 @@ from auth.memory import get_memory_context
 from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 from dotenv import load_dotenv
 
+from sentence_transformers import CrossEncoder
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -390,6 +391,8 @@ class ZhiZhanRAGEngine:
             collection_name="zhizhan_ephemeral_reports",
             embedding_function=self.embeddings
         )
+        # CPU 友好：max_length=128 缩短到原来的 1/4，速度提升 4 倍
+        self.reranker = CrossEncoder('BAAI/bge-reranker-v2-m3', max_length=128)
         self._industry_cache = {}
 
     async def get_industry_by_llm(self, stock_code: str, stock_name: str) -> str:
@@ -440,20 +443,20 @@ class ZhiZhanRAGEngine:
         raw_docs = []
 
         try:
-            raw_docs.extend(self.system_db.similarity_search(req.message, k=12))
+            raw_docs.extend(self.system_db.similarity_search(req.message, k=8))
         except Exception:
             pass
 
         if req.selected_docs:
             try:
                 raw_docs.extend(self.private_db.similarity_search(
-                    req.message, k=10, filter={"doc_id": {"$in": req.selected_docs}}
+                    req.message, k=5, filter={"doc_id": {"$in": req.selected_docs}}
                 ))
             except Exception:
                 pass
 
         if raw_docs:
-            # 去重后直接取 ChromaDB 相似度排序的前 6 篇（BAAI embedding 排序已足够精准）
+            # 去重
             seen = set()
             unique_docs = []
             for doc in raw_docs:
@@ -461,7 +464,14 @@ class ZhiZhanRAGEngine:
                     seen.add(doc.page_content)
                     unique_docs.append(doc)
 
-            for idx, doc in enumerate(unique_docs[:6]):
+            # 轻量 rerank：max_length=128，文档少速度快
+            sentence_pairs = [[req.message, doc.page_content] for doc in unique_docs]
+            rerank_scores = self.reranker.predict(sentence_pairs)
+            scored_docs = list(zip(unique_docs, rerank_scores))
+            scored_docs.sort(key=lambda x: x[1], reverse=True)
+            top_docs = [doc for doc, score in scored_docs[:5] if score > 0]
+
+            for idx, doc in enumerate(top_docs):
                 source_name = doc.metadata.get('source', '内部研报')
                 retrieved_context += f"[知识库资料 {idx+1} ({source_name})]: {doc.page_content}\n\n"
 
