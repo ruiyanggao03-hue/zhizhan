@@ -400,7 +400,7 @@ export default function Sentiment() {
                               策略指向: {heavyData?.ai_analysis?.advice}
                             </span>
                          </div>
-                         <div style={{ position: 'relative', flex: 1, width: '100%', overflow: 'hidden' }}>
+                         <div style={{ flex: 1, width: '100%', overflowY: 'auto', paddingRight: '4px' }}>
                            <AnimatePresence mode="wait">
                               {insights.length > 0 && (
                                 <motion.div
@@ -409,7 +409,7 @@ export default function Sentiment() {
                                    animate={{ y: 0, opacity: 1 }}
                                    exit={{ y: -20, opacity: 0 }}
                                    transition={{ duration: 0.5, ease: 'easeInOut' }}
-                                   style={{ position: 'absolute', top: 0, left: 0, width: '100%', fontSize: '13px', lineHeight: '1.6' }}
+                                   style={{ fontSize: '13px', lineHeight: '1.6' }}
                                 >
                                    <div style={{ marginBottom: '8px' }}>
                                       <Text type="secondary" style={{ color: '#94a3b8' }}>核心逻辑：</Text> 

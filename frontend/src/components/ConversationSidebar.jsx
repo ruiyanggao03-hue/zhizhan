@@ -135,7 +135,7 @@ export default function ConversationSidebar({ module, stockCode, currentId, onSe
                   <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                     {conv.stock_code && (
                       <Tag color={module === 'report' ? 'purple' : 'blue'} style={{ fontSize: '10px', lineHeight: '16px', padding: '0 6px', margin: 0 }}>
-                        {conv.stock_code}
+                        {conv.stock_name || conv.stock_code}
                       </Tag>
                     )}
                     <span style={{ color: '#475569', fontSize: '11px' }}>{formatTime(conv.updated_at)}</span>

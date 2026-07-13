@@ -431,14 +431,14 @@ class ZhiZhanRAGEngine:
         raw_docs = []
 
         try:
-            raw_docs.extend(self.system_db.similarity_search(req.message, k=15))
+            raw_docs.extend(self.system_db.similarity_search(req.message, k=6))
         except Exception:
             pass
 
         if req.selected_docs:
             try:
                 raw_docs.extend(self.private_db.similarity_search(
-                    req.message, k=15, filter={"doc_id": {"$in": req.selected_docs}}
+                    req.message, k=5, filter={"doc_id": {"$in": req.selected_docs}}
                 ))
             except Exception:
                 pass
@@ -449,7 +449,7 @@ class ZhiZhanRAGEngine:
             rerank_scores = self.reranker.predict(sentence_pairs)
             scored_docs = list(zip(unique_docs, rerank_scores))
             scored_docs.sort(key=lambda x: x[1], reverse=True)
-            top_docs = [doc for doc, score in scored_docs[:6] if score > 0]
+            top_docs = [doc for doc, score in scored_docs[:4] if score > 0]
 
             for idx, doc in enumerate(top_docs):
                 source_name = doc.metadata.get('source', '内部研报')
