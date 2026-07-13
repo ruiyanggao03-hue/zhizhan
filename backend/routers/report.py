@@ -411,11 +411,22 @@ class ZhiZhanRAGEngine:
 
     def fetch_web_news(self, query: str) -> str:
         try:
-            with DDGS() as ddgs:
-                current_year = datetime.now().year
-                results = ddgs.text(f"{query} {current_year}最新行业概况 深度研报 数据 进展 风险挑战", max_results=6)
-                return "\n".join([f"[全网动态补充 {i+1}]: {r['title']} - {r['body']}" for i, r in enumerate(results)])
-        except Exception:
+            from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
+            def _search():
+                with DDGS() as ddgs:
+                    current_year = datetime.now().year
+                    results = list(ddgs.text(
+                        f"{query} {current_year}最新行业概况 深度研报 数据 进展 风险挑战",
+                        max_results=3
+                    ))
+                    return "\n".join([
+                        f"[全网动态补充 {i+1}]: {r['title']} - {r['body']}"
+                        for i, r in enumerate(results)
+                    ])
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(_search)
+                return future.result(timeout=8)
+        except (Exception, FutureTimeout):
             return "全网最新资讯加载超时。"
 
     def delete_private_doc(self, doc_id: str):

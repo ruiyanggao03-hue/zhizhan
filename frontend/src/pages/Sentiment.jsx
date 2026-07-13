@@ -392,15 +392,15 @@ export default function Sentiment() {
                       <div style={{ flex: 'none', display: 'flex', justifyContent: 'center', height: '120px' }}>
                          <ReactECharts option={optionGauge} style={{ height: '100%', width: '100%' }} />
                       </div>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                         <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                             <Bot color="#3b82f6" size={16}/>
                             <Title level={5} style={{ margin: 0, color: '#f1f5f9', fontSize: '15px' }}>智瞻核心定调</Title>
                             <span style={{ marginLeft: 'auto', color: heavyData?.ai_analysis?.advice?.includes('多') || heavyData?.ai_analysis?.advice?.includes('买') ? colorUp : (heavyData?.ai_analysis?.advice?.includes('风险') || heavyData?.ai_analysis?.advice?.includes('卖') ? colorDown : '#f59e0b'), fontWeight: 'bold', border: '1px solid', padding: '2px 8px', borderRadius: '4px', fontSize: '12px' }}>
                               策略指向: {heavyData?.ai_analysis?.advice}
                             </span>
                          </div>
-                         <div style={{ flex: 1, width: '100%', overflowY: 'auto', paddingRight: '4px' }}>
+                         <div style={{ flex: 1, width: '100%', overflowY: 'auto', paddingRight: '4px', minHeight: 0 }}>
                            <AnimatePresence mode="wait">
                               {insights.length > 0 && (
                                 <motion.div
@@ -409,7 +409,7 @@ export default function Sentiment() {
                                    animate={{ y: 0, opacity: 1 }}
                                    exit={{ y: -20, opacity: 0 }}
                                    transition={{ duration: 0.5, ease: 'easeInOut' }}
-                                   style={{ fontSize: '13px', lineHeight: '1.6' }}
+                                   style={{ fontSize: '13px', lineHeight: '1.7', wordBreak: 'break-word' }}
                                 >
                                    <div style={{ marginBottom: '8px' }}>
                                       <Text type="secondary" style={{ color: '#94a3b8' }}>核心逻辑：</Text> 
