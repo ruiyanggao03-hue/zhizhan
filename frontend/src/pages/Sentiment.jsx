@@ -16,9 +16,9 @@ const { Title, Text } = Typography;
 
 // 提取到组件外，避免每次渲染时重建
 const StatItem = ({ title, value, color }) => (
-  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '10px 8px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.06)' }}>
-    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: '4px', fontWeight: 500 }}>{title}</div>
-    <div style={{ fontSize: '18px', fontWeight: 600, color: color, fontFamily: 'monospace' }}>{value}</div>
+  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: `rgba(${color === '#ef4444' ? '239,68,68' : color === '#10b981' ? '16,185,129' : '255,255,255'},0.08)`, padding: '12px 8px', borderRadius: '10px', border: `0.5px solid rgba(${color === '#ef4444' ? '239,68,68' : color === '#10b981' ? '16,185,129' : '255,255,255'},0.15)` }}>
+    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '6px', fontWeight: 500 }}>{title}</div>
+    <div style={{ fontSize: '22px', fontWeight: 700, color: color, fontFamily: 'monospace' }}>{value}</div>
   </div>
 );
 
@@ -368,8 +368,8 @@ export default function Sentiment() {
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', marginBottom: '12px' }}>
-                            <span style={{ fontSize: '40px', fontWeight: 700, color: isUp ? colorUp : colorDown, fontFamily: 'monospace' }}>{realtime?.price?.toFixed(2) || '0.00'}</span>
-                            <span style={{ fontSize: '14px', color: isUp ? colorUp : colorDown, marginLeft: '10px', fontWeight: 600 }}>{isUp ? '+' : ''}{realtime?.change} ({isUp ? '+' : ''}{realtime?.change_pct}%)</span>
+                            <span style={{ fontSize: '52px', fontWeight: 800, color: isUp ? colorUp : colorDown, fontFamily: 'monospace' }}>{realtime?.price?.toFixed(2) || '0.00'}</span>
+                            <span style={{ fontSize: '15px', color: isUp ? colorUp : colorDown, marginLeft: '12px', fontWeight: 700 }}>{isUp ? '+' : ''}{realtime?.change} ({isUp ? '+' : ''}{realtime?.change_pct}%)</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
                             <StatItem title="今开" value={realtime?.open || '-'} color="#fff" />
