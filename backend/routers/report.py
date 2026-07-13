@@ -12,7 +12,6 @@ from auth.memory import get_memory_context
 from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 from dotenv import load_dotenv
 
-from sentence_transformers import CrossEncoder
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -391,7 +390,6 @@ class ZhiZhanRAGEngine:
             collection_name="zhizhan_ephemeral_reports",
             embedding_function=self.embeddings
         )
-        self.reranker = CrossEncoder('BAAI/bge-reranker-v2-m3', max_length=256)
         self._industry_cache = {}
 
     async def get_industry_by_llm(self, stock_code: str, stock_name: str) -> str:
@@ -455,14 +453,15 @@ class ZhiZhanRAGEngine:
                 pass
 
         if raw_docs:
-            unique_docs = {doc.page_content: doc for doc in raw_docs}.values()
-            sentence_pairs = [[req.message, doc.page_content] for doc in unique_docs]
-            rerank_scores = self.reranker.predict(sentence_pairs)
-            scored_docs = list(zip(unique_docs, rerank_scores))
-            scored_docs.sort(key=lambda x: x[1], reverse=True)
-            top_docs = [doc for doc, score in scored_docs[:6] if score > 0]
+            # 去重后直接取 ChromaDB 相似度排序的前 6 篇（BAAI embedding 排序已足够精准）
+            seen = set()
+            unique_docs = []
+            for doc in raw_docs:
+                if doc.page_content not in seen:
+                    seen.add(doc.page_content)
+                    unique_docs.append(doc)
 
-            for idx, doc in enumerate(top_docs):
+            for idx, doc in enumerate(unique_docs[:6]):
                 source_name = doc.metadata.get('source', '内部研报')
                 retrieved_context += f"[知识库资料 {idx+1} ({source_name})]: {doc.page_content}\n\n"
 
