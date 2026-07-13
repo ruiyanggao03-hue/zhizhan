@@ -391,8 +391,8 @@ class ZhiZhanRAGEngine:
             collection_name="zhizhan_ephemeral_reports",
             embedding_function=self.embeddings
         )
-        # CPU 友好：max_length=128 缩短到原来的 1/4，速度提升 4 倍
-        self.reranker = CrossEncoder('BAAI/bge-reranker-v2-m3', max_length=128)
+        # CPU 友好：max_length=64，判断文档相关性无需长文本
+        self.reranker = CrossEncoder('BAAI/bge-reranker-v2-m3', max_length=64)
         self._industry_cache = {}
 
     async def get_industry_by_llm(self, stock_code: str, stock_name: str) -> str:
@@ -443,14 +443,14 @@ class ZhiZhanRAGEngine:
         raw_docs = []
 
         try:
-            raw_docs.extend(self.system_db.similarity_search(req.message, k=8))
+            raw_docs.extend(self.system_db.similarity_search(req.message, k=6))
         except Exception:
             pass
 
         if req.selected_docs:
             try:
                 raw_docs.extend(self.private_db.similarity_search(
-                    req.message, k=5, filter={"doc_id": {"$in": req.selected_docs}}
+                    req.message, k=4, filter={"doc_id": {"$in": req.selected_docs}}
                 ))
             except Exception:
                 pass

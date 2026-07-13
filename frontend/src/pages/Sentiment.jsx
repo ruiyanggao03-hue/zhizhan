@@ -359,25 +359,25 @@ export default function Sentiment() {
              <Alert title="错误" description={errorMsg} type="error" showIcon style={{marginTop: '20px'}}/>
           ) : (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', minHeight: 0 }}>
-              <Row gutter={20} style={{ flex: '0 0 44%', marginBottom: 0, minHeight: 0 }}>
+              <Row gutter={20} style={{ flex: '0 0 47%', marginBottom: 0, minHeight: 0 }}>
                 <Col span={10} style={{ height: '100%', padding: '0 10px' }}>
                   <Card variant="borderless" style={{ background: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(16px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.04)', height: '100%', display: 'flex', flexDirection: 'column' }} styles={{ body: { padding: '20px', display: 'flex', flexDirection: 'column', height: '100%' } }}>
                     <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <Activity color="#00E5FF" size={18}/>
                         <span style={{ margin: 0, color: '#00E5FF', fontSize: '16px', fontWeight: 'bold', letterSpacing: '1px' }}>实时盘口</span>
                     </div>
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', marginBottom: '24px' }}>
-                            <span style={{ fontSize: '48px', fontWeight: 900, color: isUp ? colorUp : colorDown, fontFamily: 'monospace' }}>{realtime?.price?.toFixed(2) || '0.00'}</span>
-                            <span style={{ fontSize: '16px', color: isUp ? colorUp : colorDown, marginLeft: '12px', fontWeight: 600 }}>{isUp ? '+' : ''}{realtime?.change} ({isUp ? '+' : ''}{realtime?.change_pct}%)</span>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', marginBottom: '12px' }}>
+                            <span style={{ fontSize: '40px', fontWeight: 700, color: isUp ? colorUp : colorDown, fontFamily: 'monospace' }}>{realtime?.price?.toFixed(2) || '0.00'}</span>
+                            <span style={{ fontSize: '14px', color: isUp ? colorUp : colorDown, marginLeft: '10px', fontWeight: 600 }}>{isUp ? '+' : ''}{realtime?.change} ({isUp ? '+' : ''}{realtime?.change_pct}%)</span>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
                             <StatItem title="今开" value={realtime?.open || '-'} color="#fff" />
                             <StatItem title="最高" value={realtime?.high || '-'} color={colorUp} />
                             <StatItem title="最低" value={realtime?.low || '-'} color={colorDown} />
                         </div>
-                        <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '12px', color: '#475569', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: '6px' }}>
-                            ⚠️ 若当前为非交易时段，则显示最近一个交易日的收盘数据
+                        <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '11px', color: '#475569', background: 'rgba(255,255,255,0.02)', padding: '6px 8px', borderRadius: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            若当前为非交易时段，则显示最近一个交易日的收盘数据
                         </div>
                     </div>
                   </Card>
